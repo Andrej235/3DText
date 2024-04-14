@@ -1,4 +1,3 @@
-import { OrbitControls } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
 import { Mesh } from "three";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
@@ -6,7 +5,7 @@ import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 import { Font } from "three/examples/jsm/Addons.js";
 
-interface Text3DProps {
+export interface Text3DProps {
   text: string;
   fontName?: "JetBrains";
   geometryProps?: Partial<Text3DGeometryProps>;
@@ -29,12 +28,13 @@ export default function Text3D({ text, fontName, geometryProps }: Text3DProps) {
     loadFont();
   }, [meshRef.current, fontName]);
 
+  useEffect(createTextGeometry, [font, text, geometryProps]);
+
   function loadFont() {
     const loader = new FontLoader();
-    loader.load(`/${fontName ?? "JetBrains"}.json`, (response: Font) => {
-      setFont(response);
-      createTextGeometry();
-    });
+    loader.load(`/${fontName ?? "JetBrains"}.json`, (response: Font) =>
+      setFont(response)
+    );
   }
 
   function createTextGeometry() {
@@ -54,11 +54,8 @@ export default function Text3D({ text, fontName, geometryProps }: Text3DProps) {
   }
 
   return (
-    <>
-      <mesh ref={meshRef}>
-        <meshStandardMaterial color="#00f" />
-      </mesh>
-      <OrbitControls />
-    </>
+    <mesh ref={meshRef}>
+      <meshStandardMaterial color="#00f" />
+    </mesh>
   );
 }
