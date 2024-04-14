@@ -43,34 +43,41 @@ export default function UseGUI<T extends object>({
     }
 
     const value = parentValue[key] as NonNullable<T[keyof T]>;
-    if (typeof value !== "object") {
-      const controller = gui.add(parentValue, key);
+    if (typeof value === "object") {
+      const valueKeys = Object.keys(value) as Array<keyof typeof value>;
+      const folder = gui.addFolder(key as string);
 
-      //Doesn't work if value is further down the recursion tree than 1 (ex: { a: {b: 123}} will work, but if 'b' was an object it wouldn't)
-      controller.onChange((newValue) => {
-        if (history.length === 0) {
-          setState({ ...state, [key]: newValue });
-        } else if (history.length === 1) {
-          const changedObject = { ...parentValue, [key]: newValue };
-          const changedObjectKey = history[history.length - 1];
-          setState({ ...state, [changedObjectKey]: changedObject });
-        } else {
-          console.error(
-            "UseGUI only supports 1 level of nesting, for now at least"
-          );
-        }
-      });
+      valueKeys.forEach((innerKey) =>
+        addToGUI(folder, value as NonNullable<T[keyof T]>, innerKey, [
+          ...history,
+          key as string,
+        ])
+      );
       return;
     }
 
-    const valueKeys = Object.keys(value) as Array<keyof typeof value>;
-    const folder = gui.addFolder(key as string);
+    const controller = gui.add(parentValue, key);
 
-    valueKeys.forEach((innerKey) =>
-      addToGUI(folder, value as NonNullable<T[keyof T]>, innerKey, [
-        ...history,
-        key as string,
-      ])
-    );
+    controller.onChange((newValue) => {
+      if (history.length === 0) setState({ ...state, [key]: newValue });
+      else if (history.length === 1) {
+        const changedObject = { ...parentValue, [key]: newValue };
+        setState({ ...state, [history[0]]: changedObject });
+      } else {
+        let changedObject: { [key: string]: any } = {
+          ...parentValue,
+          [key]: newValue,
+        };
+        let current: { [key: string]: any } = state;
+
+        for (let i: number = history.length - 1; i >= 0; i--) {
+          for (let j: number = 0; j < i; j++) current = current[history[j]];
+
+          const changedObjectKey = history[i];
+          changedObject = { ...current, [changedObjectKey]: changedObject };
+        }
+        setState({ ...state, [history[0]]: changedObject });
+      }
+    });
   }
 }

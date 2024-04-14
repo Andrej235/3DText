@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mesh } from "three";
+import { Mesh, Vector3 } from "three";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 //@ts-ignore
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
@@ -18,6 +18,7 @@ interface Text3DGeometryProps {
   curveSegments: number;
   depth: number;
   size: number;
+  position: Vector3;
 }
 
 export default function Text3D({ text, fontName, geometryProps }: Text3DProps) {
@@ -54,7 +55,15 @@ export default function Text3D({ text, fontName, geometryProps }: Text3DProps) {
   }
 
   return (
-    <mesh ref={meshRef}>
+    <mesh
+      ref={meshRef}
+      //If position is not deconstructed it will not rerender every time it changes
+      position={[
+        geometryProps?.position?.x ?? 0,
+        geometryProps?.position?.y ?? 0,
+        geometryProps?.position?.z ?? 0,
+      ]}
+    >
       <meshStandardMaterial color="#00f" />
     </mesh>
   );

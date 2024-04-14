@@ -1,6 +1,7 @@
 import Text3D, { Text3DProps } from "./Text3D";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import UseGUI from "./UseGUI";
+import { Vector3 } from "three";
 
 export default function Text3DWithGUI() {
   const [props, setProps] = useState<Text3DProps>({
@@ -13,6 +14,7 @@ export default function Text3DWithGUI() {
       bevelThickness: 1,
       curveSegments: 10,
       depth: 10,
+      position: new Vector3(0, 0, 0),
     },
   });
 
@@ -20,10 +22,6 @@ export default function Text3DWithGUI() {
     state: props,
     setState: setProps,
   });
-
-  useEffect(() => {
-    console.log(props);
-  }, [props]);
 
   return (
     <Text3D
