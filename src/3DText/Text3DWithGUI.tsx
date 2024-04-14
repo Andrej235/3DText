@@ -1,6 +1,6 @@
 import Text3D, { Text3DProps } from "./Text3D";
 import { useState } from "react";
-import UseGUI from "./UseGUI";
+import useGUI from "./UseGUI";
 import { Vector3 } from "three";
 
 export default function Text3DWithGUI() {
@@ -18,10 +18,7 @@ export default function Text3DWithGUI() {
     },
   });
 
-  UseGUI({
-    state: props,
-    setState: setProps,
-  });
+  useGUI(props, setProps, "3D Text");
 
   return (
     <Text3D

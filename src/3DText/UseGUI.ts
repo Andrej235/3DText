@@ -1,34 +1,35 @@
 import { useEffect } from "react";
 import { GUI } from "dat.gui";
 
-interface UseGUIProps<T> {
-  state: T;
-  setState: (newState: T) => void;
-}
+let gui: GUI | null = null;
 
-export default function UseGUI<T extends object>({
-  state,
-  setState,
-}: UseGUIProps<T>) {
+export default function useGUI<T>(
+  state: T,
+  setState: (newState: T) => void,
+  folderName: string
+) {
   useEffect(() => {
-    console.log("Test, rerender");
+    if (!gui) {
+      const guiWrapper = document.createElement("div");
+      document.body.append(guiWrapper);
+      guiWrapper.style.position = "absolute";
+      guiWrapper.style.top = "0";
+      guiWrapper.style.left = "0";
 
-    const guiWrapper = document.createElement("div");
-    document.body.append(guiWrapper);
-    guiWrapper.style.position = "absolute";
-    guiWrapper.style.top = "0";
-    guiWrapper.style.left = "0";
+      gui = new GUI();
+      guiWrapper.appendChild(gui.domElement);
+      gui.width = 500;
+    }
 
-    const gui = new GUI();
-    guiWrapper.appendChild(gui.domElement);
-    gui.width = 500;
+    const folder = gui.addFolder(folderName);
+    typeof state === "object"
+      ? addToGUI(folder, state as object, "")
+      : addNonObjectToGUI(folder, state);
 
-    addToGUI(gui, state, "");
-
-    return () => guiWrapper.remove();
+    return () => gui?.removeFolder(gui.__folders[folderName]);
   }, []);
 
-  function addToGUI<T>(
+  function addToGUI<T extends object>(
     gui: GUI,
     parentValue: NonNullable<T>,
     key: keyof T | "",
@@ -68,7 +69,7 @@ export default function UseGUI<T extends object>({
           ...parentValue,
           [key]: newValue,
         };
-        let current: { [key: string]: any } = state;
+        let current: { [key: string]: any } = state as object;
 
         for (let i: number = history.length - 1; i >= 0; i--) {
           for (let j: number = 0; j < i; j++) current = current[history[j]];
@@ -79,5 +80,10 @@ export default function UseGUI<T extends object>({
         setState({ ...state, [history[0]]: changedObject });
       }
     });
+  }
+
+  function addNonObjectToGUI(gui: GUI, value: any) {
+    if (typeof value === "object") return;
+    gui.add({ value }, "value").onChange(setState);
   }
 }
