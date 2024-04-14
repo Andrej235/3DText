@@ -9,17 +9,7 @@ export default function useGUI<T>(
   folderName: string
 ) {
   useEffect(() => {
-    if (!gui) {
-      const guiWrapper = document.createElement("div");
-      document.body.append(guiWrapper);
-      guiWrapper.style.position = "absolute";
-      guiWrapper.style.top = "0";
-      guiWrapper.style.left = "0";
-
-      gui = new GUI();
-      guiWrapper.appendChild(gui.domElement);
-      gui.width = 500;
-    }
+    if (!gui) gui = createGUIElement();
 
     const folder = gui.addFolder(folderName);
     typeof state === "object"
@@ -28,6 +18,19 @@ export default function useGUI<T>(
 
     return () => gui?.removeFolder(gui.__folders[folderName]);
   }, []);
+
+  function createGUIElement() {
+    const guiWrapper = document.createElement("div");
+    document.body.append(guiWrapper);
+    guiWrapper.style.position = "absolute";
+    guiWrapper.style.top = "0";
+    guiWrapper.style.left = "0";
+
+    const gui = new GUI();
+    guiWrapper.appendChild(gui.domElement);
+    gui.width = 500;
+    return gui;
+  }
 
   function addToGUI<T extends object>(
     gui: GUI,

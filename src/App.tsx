@@ -13,7 +13,11 @@ function App() {
   }, [test]);
 
   return (
-    <Canvas>
+    <Canvas camera={
+      {
+        far: 10000
+      }
+    }>
       {/*       <Text3D
         fontName="JetBrains"
         text="Hello World! =>"
@@ -24,7 +28,9 @@ function App() {
         }}
       /> */}
 
-      <Text3DWithGUI />
+      <Text3DWithGUI onClick={() => console.log('Clicked on 3D text')}>
+        <meshBasicMaterial color="blue" />
+      </Text3DWithGUI>
       <OrbitControls />
     </Canvas>
   );
