@@ -31,7 +31,8 @@ export default function UseGUI<T extends object>({
   function addToGUI<T>(
     gui: GUI,
     parentValue: NonNullable<T>,
-    key: keyof T | ""
+    key: keyof T | "",
+    history: string[] = []
   ) {
     if (typeof parentValue !== "object") return;
 
@@ -45,10 +46,20 @@ export default function UseGUI<T extends object>({
     if (typeof value !== "object") {
       const controller = gui.add(parentValue, key);
 
-      //Doesn't work if value is further down the recursion tree
-      controller.onChange((newValue) =>
-        setState({ ...state, [key]: newValue })
-      );
+      //Doesn't work if value is further down the recursion tree than 1 (ex: { a: {b: 123}} will work, but if 'b' was an object it wouldn't)
+      controller.onChange((newValue) => {
+        if (history.length === 0) {
+          setState({ ...state, [key]: newValue });
+        } else if (history.length === 1) {
+          const changedObject = { ...parentValue, [key]: newValue };
+          const changedObjectKey = history[history.length - 1];
+          setState({ ...state, [changedObjectKey]: changedObject });
+        } else {
+          console.error(
+            "UseGUI only supports 1 level of nesting, for now at least"
+          );
+        }
+      });
       return;
     }
 
@@ -56,7 +67,10 @@ export default function UseGUI<T extends object>({
     const folder = gui.addFolder(key as string);
 
     valueKeys.forEach((innerKey) =>
-      addToGUI(folder, value as NonNullable<T[keyof T]>, innerKey)
+      addToGUI(folder, value as NonNullable<T[keyof T]>, innerKey, [
+        ...history,
+        key as string,
+      ])
     );
   }
 }
